@@ -1,0 +1,277 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+
+    <section class="p-t-20">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">
+                                Transaction Details
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <p>
+                                <b>Order Number</b> : {{ details.order_number }}
+                            </p>
+                            <p>
+                                <b>Origin</b> : {{ details.origin }}
+                            </p>
+                            <p>
+                                <b>Destination</b> : {{ details.destination }}
+                            </p>
+                            <p>
+                                <b>Item Description</b> : {{ details.item }}
+                            </p>
+                            <p>
+                                <b>Quantity</b> : {{ details.quantity }}
+                            </p>
+                            <p>
+                                <b>Status</b> : {{ details.current_status }}
+                            </p>
+                            <p>
+                                <b>Date/Time</b> : {{ readable_time(details.timestamp) }}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <a class="btn btn-default" href="{{ url_for('transaction.all_transactions') }}">
+                                <i class="fa fa-chevron-circle-left"></i> Go Back
+                            </a>
+                            {% if can_act %}
+                                <button class="btn btn-success pull-right btn-action" data-status="approved">
+                                    Accept
+                                </button>
+                                <button class="btn btn-danger pull-right btn-action" data-status="declined">
+                                    Decline
+                                </button>
+                            {% endif %}
+                            {% if role.retailer %}
+                                <button class="btn btn-success pull-right btn-action" data-status="received">
+                                    Confirm Order Received <i class="fa fa-check-circle"></i>
+                                </button>
+                            {% endif %}
+                            {% if role.supplier or role.courier %}
+                                <button class="btn btn-info pull-right btn-action" data-status="update">
+                                    Update Tracking <i class="fa fa-info-circle"></i>
+                                </button>
+                                {% if role.supplier %}
+                                    <button class="btn btn-info pull-right btn-action" data-status="shipped">
+                                        Ship Order <i class="fa fa-info-circle"></i>
+                                    </button>
+                                {% endif %}
+                                {% if role.courier %}
+                                    <button class="btn btn-info pull-right btn-action" data-status="transferred">
+                                        Transfer Order <i class="fa fa-info-circle"></i>
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                <div class="accordion" id="trackDiv">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <button class="btn btn-default btn-sm" type="button" data-toggle="collapse" data-target="#trackingInfo" aria-expanded="true" aria-controls="trackingInfo">
+                                  View Tracking Information
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="trackingInfo" class="collapse show" aria-labelledby="trackingInfo" data-parent="#trackDiv">
+                            <div class="card-body">
+                            {% for tr in tracking %}
+                                {% if tr.courier != '' %}
+                                <p>
+                                    Courier : {{ tr.courier }}
+                                </p>
+                                {% endif %}
+                                <p>
+                                    Status : {{ tr.status }}
+                                </p>
+                                <p>
+                                    Actor : {{ tr.actor }}
+                                </p>
+                                <p>
+                                    Timestamp : {{ readable_time(tr.timestamp) }}
+                                </p>
+                                <hr>
+                            {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal modal-alert fade" id="basicModal" tabindex="-1" role="dialog" aria-labelledby="basicModal" aria-hidden="true">
+      <div class="modal-dialog">
+
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <div class="modal-title col-md-10">Update Order Tracking Information</div>
+            <button type="button" class="close col-md-2" data-dismiss="modal" aria-hidden="true">&times;</button>
+          </div>
+
+          <div class="modal-body">
+
+            <form>
+                <input type="hidden" value="{{ details.order_number }}" id="orderId">
+                <input type="hidden" id="oStatus">
+                <input type="hidden" id="oCourier" value="{{ details.courier }}">
+                <input type="hidden" id="oAction">
+
+                <p id="confirmText">
+
+                </p>
+
+                <div class="row" id="order-status-div">
+                  <label class="col-sm-12">Order Status:</label>
+                  <div class="col-sm-12">
+                    <input type="text" id="orderStatus" class="form-control">
+                  </div>
+                </div>
+
+                <div class="row" id="order-courier-div">
+                  <label class="col-sm-12">Select Courier:</label>
+                  <div class="col-sm-12">
+                      <select id="courierSelect">
+                          <option value="">- Select Courier -</option>
+                          {% for courier in couriers %}
+                              <option value="{{ courier }}">{{ courier }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                </div>
+
+            </form>
+            <p id="errorTxt" class="text-danger"></p>
+
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            <button type="button" id="button_confirm" class="btn btn-success">Confirm</button>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('.btn-action').on('click', function(){
+
+                var status = $(this).attr('data-status');
+                init_modal(status);
+
+            })
+
+            $('#button_confirm').on('click', function () {
+
+                var action = $('#oAction').val();
+                var status = '';
+                var courier = '';
+                var valid =  '';
+
+                if(action == '1'){
+                    status = $('#oStatus').val();
+                    courier = $('#oCourier').val();
+                    valid = status ? true : '';
+                }
+                if(action == '2'){
+                    status = $('#oStatus').val();
+                    courier = $('#courierSelect').val();
+                    valid = courier ? true : '';
+                }
+                if(action == '3'){
+                    status = $('#orderStatus').val();
+                    courier = $('#oCourier').val();
+                    valid = status.trim() ? true : '';
+                }
+
+                if(valid){
+                    {#alert('status : ' + status + '\ncourier : '+ courier);#}
+                    update_info(status, courier)
+                }else{
+                    $('#errorTxt').text('Missing Values!')
+                }
+
+            })
+
+            function init_modal(status){
+                $('#order-status-div').hide();
+                $('#order-courier-div').hide();
+                $('#orderStatus').val('');
+                $('#oAction').val('');
+                $('#confirmText').text('')
+                $('#errorTxt').text('')
+                if(status == 'approved' || status == 'declined'){
+                    $('#oStatus').val(status);
+                    $('#confirmText').text('This order is about to be ' + status);
+                    $('#oAction').val('1');
+                    $('#basicModal').modal('show');
+                }
+                if(status == 'received'){
+                    $('#oStatus').val(status);
+                    $('#confirmText').text('I have received the order.');
+                    $('#oAction').val('1');
+                    $('#basicModal').modal('show');
+                }
+                if(status == 'shipped' || status == 'transferred'){
+                    $('#oStatus').val(status);
+                    $('#order-courier-div').show();
+                    $('#oAction').val('2');
+                    $('#basicModal').modal('show');
+                }
+                if(status == 'update'){
+                    $('#order-status-div').show();
+                    $('#oAction').val('3');
+                    $('#basicModal').modal('show');
+                }
+            }
+
+
+            function update_info(status, courier){
+                var data = {
+                      order: $('#orderId').val(),
+                      status: status,
+                      courier: courier
+                }
+                $.ajax({
+                  url: "/transaction/update_tracking",
+                  type: "POST",
+                  dataType : 'json',
+                  contentType: 'application/json',
+                  data: JSON.stringify(data),
+                  success: function(response){
+                    location.reload(true)
+                  },
+                  error: function(error){
+                    console.log(error);
+                    $('#basicModal').modal('hide');
+                    alert('Operation Failed! Please Try Again.')
+                  }
+                });
+            }
+
+        })
+
+    </script>
+
+{% endblock %}

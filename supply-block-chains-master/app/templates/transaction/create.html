@@ -1,0 +1,79 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+
+<div class="col-lg-6">
+    <div class="card">
+        <div class="card-header">
+            <strong>Create an order here</strong>
+        </div>
+        <form action="" method="post" class="form-horizontal">
+        <div class="card-body card-block">
+            {{ form.hidden_tag() }}
+            <div class="row form-group">
+                <div class="col col-md-3">
+                    <label class=" form-control-label">Order by:</label>
+                </div>
+                <div class="col-12 col-md-9">
+                    <p class="form-control-static">{{ current_user.company }}</p>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col col-md-3">
+                    <label class=" form-control-label">Supplier</label>
+                </div>
+                <div class="col-12 col-md-9">
+                    {{ form.supplier(class_='form-control') }}
+                    {% if form.supplier.errors %}
+                      <br>
+                      {% for error in form.supplier.errors %}
+                        <span style="color:red">[{{error}}]</span>
+                      {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col col-md-3">
+                    <label class=" form-control-label">Item Description</label>
+                </div>
+                <div class="col-12 col-md-9">
+                    {{ form.item(class_='form-control', placeholder='Enter the items you want') }}
+                    {% if form.item.errors %}
+                      <br>
+                      {% for error in form.item.errors %}
+                        <span style="color:red">[{{error}}]</span>
+                      {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row form-group">
+                    <div class="col col-md-3">
+                        <label class=" form-control-label">Quantity</label>
+                    </div>
+                    <div class="col-12 col-md-9">
+                        {{ form.quantity(class_='form-control', placeholder='Enter the quantity') }}
+                        {% if form.quantity.errors %}
+                          <br>
+                          {% for error in form.quantity.errors %}
+                            <span style="color:red">[{{error}}]</span>
+                          {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+        <p class="text-danger">
+            {{ message if message != '' }}
+        </p>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa fa-dot-circle-o"></i> Submit
+            </button>
+            <button type="reset" class="btn btn-danger btn-sm">
+                <i class="fa fa-ban"></i> Reset
+            </button>
+        </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

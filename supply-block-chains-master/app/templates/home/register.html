@@ -1,0 +1,79 @@
+{% extends "_loginlayout.html" %}
+
+{% block content %}
+
+<form action="" method="post">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        <label>Company</label>
+        {{ form.company(size=32, class_='au-input au-input--full', placeholder='Company') }}
+        {% if form.company.errors %}
+          <br>
+          {% for error in form.company.errors %}
+            <span style="color:red">[{{error}}]</span>
+          {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label>Company Role</label>
+        {{ form.user_role(class_='form-control') }}
+        {% if form.user_role.errors %}
+          <br>
+          {% for error in form.user_role.errors %}
+            <span style="color:red">[{{error}}]</span>
+          {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label>Username</label>
+        {{ form.username(size=32, class_='au-input au-input--full', placeholder='Username') }}
+        {% if form.username.errors %}
+          <br>
+          {% for error in form.username.errors %}
+            <span style="color:red">[{{error}}]</span>
+          {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label>Email Address</label>
+        {{ form.email(size=32, class_='au-input au-input--full', placeholder='Email') }}
+        {% if form.email.errors %}
+          <br>
+          {% for error in form.email.errors %}
+            <span style="color:red">[{{error}}]</span>
+          {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label>Password</label>
+        {{ form.password(size=32, class_='au-input au-input--full', placeholder='Password') }}
+        {% if form.password.errors %}
+          <br>
+          {% for error in form.password.errors %}
+            <span style="color:red">[{{error}}]</span>
+          {% endfor %}
+        {% endif %}
+    </div>
+    <div class="form-group">
+        <label>Confirm Password</label>
+        {{ form.password2(size=32, class_='au-input au-input--full', placeholder='Confirm Password') }}
+        {% if form.password2.errors %}
+          <br>
+          {% for error in form.password2.errors %}
+            <span style="color:red">[{{error}}]</span>
+          {% endfor %}
+        {% endif %}
+    </div>
+
+    <button class="au-btn au-btn--block au-btn--green m-b-20" type="submit">register</button>
+
+</form>
+<div class="register-link">
+    <p>
+        Already have account?
+        <a href="{{ url_for('home.login') }}">Sign In</a>
+    </p>
+</div>
+
+{% endblock %}
+

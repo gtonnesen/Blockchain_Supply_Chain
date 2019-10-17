@@ -1,0 +1,77 @@
+{% extends "_layout.html" %}
+
+{% block content %}
+
+    <!-- DATA TABLE-->
+    <section class="p-t-20">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <h3 class="title-5 m-b-35">All Transactions</h3>
+                    <div class="table-data__tool">
+                        <div class="table-data__tool-left">
+                            <div class="rs-select2--light rs-select2--md">
+                                <select class="js-select2" name="property">
+                                    <option selected="selected">All</option>
+                                    <option value="">Pending</option>
+                                    <option value="">Approved</option>
+                                    <option value="">Declined</option>
+                                    <option value="">Shipped</option>
+                                </select>
+                                <div class="dropDownSelect2"></div>
+                            </div>
+                            <button class="au-btn-filter">
+                                <i class="zmdi zmdi-filter-list"></i>filters</button>
+                        </div>
+                        <div class="table-data__tool-right">
+                            {% if can_order %}
+                            <a class="au-btn au-btn-icon au-btn--green au-btn--small" href="{{ url_for('transaction.create_transaction') }}">
+                                <i class="zmdi zmdi-plus"></i>Create Order
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="table-responsive table-responsive-data2">
+                        <table class="table table-data2">
+                            <thead>
+                                <tr>
+                                    <th>Order No</th>
+                                    <th>Origin</th>
+                                    <th>Destination</th>
+                                    <th>Courier</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for tx in transactions %}
+                                <tr class="tr-shadow">
+                                    <td>{{ tx.node_id }}</td>
+                                    <td>{{ tx.actor }}</td>
+                                    <td>{{ tx.supplier }}</td>
+                                    <td>{{ tx.courier }}</td>
+                                    <td>{{ '{} - {}'.format(tx.item, tx.quantity) }}</td>
+                                    <td>{{ tx.status }}</td>
+                                    <td>{{ readable_time(tx.timestamp) }}</td>
+                                    <td>
+                                        <div class="table-data-feature">
+                                            <a href="{{ url_for('transaction.view_transaction', order=tx.node_id) }}" class="item" data-toggle="tooltip" data-placement="top" title="Order Details">
+                                                <i class="zmdi zmdi-more"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="spacer"></tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+        <!-- END DATA TABLE-->
+
+{% endblock %}
